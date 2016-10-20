@@ -33,7 +33,7 @@ public class Main extends Application {
 		
 		if((FromCurr == "PLN" && ToCurr == "Euro") || (FromCurr == "Euro" && ToCurr == "PLN"))
 		{
-			course = new BigDecimal(4.31940008);
+			course = new BigDecimal("4.31940008");
 		}
 		if(FromCurr == "PLN" && ToCurr == "Euro")
 		{
