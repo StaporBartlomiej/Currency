@@ -1,5 +1,11 @@
 package application;
 	
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.ParsePosition;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
@@ -18,24 +25,33 @@ import javafx.stage.Stage;
 public class Main extends Application {
 	
 	
-	public String solve(Double Amount,String FromCurr, String ToCurr)
+	public String solve(BigDecimal Amount,String FromCurr, String ToCurr)
 	{
-		Double ConvertedAmount = 0.0;
-		Double course = 0.0;
+		BigDecimal ConvertedAmount = new BigDecimal("0.0");
+		BigDecimal course = new BigDecimal("0.0");
+		MathContext mc = new MathContext(2);
+		
 		if((FromCurr == "PLN" && ToCurr == "Euro") || (FromCurr == "Euro" && ToCurr == "PLN"))
 		{
-			course = 4.31940008;
+			course = new BigDecimal(4.31940008);
 		}
 		if(FromCurr == "PLN" && ToCurr == "Euro")
 		{
-			ConvertedAmount = Amount * course;
+			ConvertedAmount = Amount.divide(course,2,RoundingMode.HALF_UP);
 		}
 		else if(FromCurr == "Euro" && ToCurr == "PLN")
 		{
-			ConvertedAmount = Amount / course;
+			ConvertedAmount = Amount.multiply(course,mc);
 		}
+		else if((FromCurr =="Euro" && ToCurr == "Euro") || (FromCurr =="PLN" && ToCurr == "PLN"))
+		{
+			ConvertedAmount = Amount;
+		}
+	
 		
-		String value = ConvertedAmount.toString();
+		//String result = String.format("%.2f", value);
+		BigDecimal result = ConvertedAmount.setScale(2);
+		String value = String.valueOf(result.doubleValue());
 		
 		
 		return value;
@@ -53,8 +69,8 @@ public class Main extends Application {
 			
 			
 			ObservableList<String> items = FXCollections.observableArrayList("PLN", "Euro");
-			final ComboBox fromCurrency = new ComboBox(items);
-			final ComboBox toCurrency = new ComboBox(items);
+			ComboBox<String> fromCurrency = new ComboBox(items);
+			ComboBox<String> toCurrency = new ComboBox(items);
 
 			
 			Label Amount = new Label("Amount");
@@ -64,6 +80,27 @@ public class Main extends Application {
 			CurrencyBefore.setPromptText("Enter Value");
 			grid.add(CurrencyBefore, 0, 1);
 			
+			DecimalFormat format = new DecimalFormat( "#.00" ); // everything up to next comment forces user to input numbers, not Strings
+			CurrencyBefore.setTextFormatter( new TextFormatter<>(c ->
+			{
+			    if ( c.getControlNewText().isEmpty() )
+			    {
+			        return c;
+			    }
+
+			    ParsePosition parsePosition = new ParsePosition( 0 );
+			    Object object = format.parse( c.getControlNewText(), parsePosition );
+
+			    if ( object == null || parsePosition.getIndex() < c.getControlNewText().length() )
+			    {
+			        return null;
+			    }
+			    else
+			    {
+			        return c;
+			    }
+			}));
+			 //next comment
 			
 			Label from = new Label("From Currency");
 			grid.add(from, 1, 0);
@@ -79,18 +116,19 @@ public class Main extends Application {
 			grid.add(ConvertedAmount, 3, 0);
 			
 			Label ConvertedAmount2 = new Label();
+			grid.add(ConvertedAmount2, 3, 1);
 			
 			Button Convert = new Button("Convert");
 			grid.add(Convert, 4, 1);
 			Convert.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e)
 				{
-					double amount = Double.parseDouble((CurrencyBefore.getText()));
-					String fromcurr = fromCurrency.getAccessibleText();
-					String tocurr = toCurrency.getAccessibleText();
+					BigDecimal amount = new BigDecimal( Double.parseDouble((CurrencyBefore.getText())));
+					String fromcurr = fromCurrency.getSelectionModel().getSelectedItem();
+					String tocurr = toCurrency.getSelectionModel().getSelectedItem();
 					ConvertedAmount2.setText(solve(amount,fromcurr,tocurr));
 				
-				
+				//ConvertedAmount2.setText(CurrencyBefore.getText());
 				
 				
 				
