@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -51,14 +52,15 @@ public class Main extends Application {
 			Label ConvertedAmount = new Label("Converted Amount");
 			grid.add(ConvertedAmount, 3, 0);
 			
+			Label ConvertedAmount2 = new Label();
 			
-			
+			Button Convert = new Button("Convert");
+			grid.add(Convert, 4, 1);
 
-
 			
 			
 			
-			Scene scene = new Scene(grid,500,375);
+			Scene scene = new Scene(grid,525,375);
 			
 
 			
