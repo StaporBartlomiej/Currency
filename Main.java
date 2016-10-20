@@ -3,6 +3,8 @@ package application;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -14,6 +16,30 @@ import javafx.stage.Stage;
 
 
 public class Main extends Application {
+	
+	
+	public String solve(Double Amount,String FromCurr, String ToCurr)
+	{
+		Double ConvertedAmount = 0.0;
+		Double course = 0.0;
+		if((FromCurr == "PLN" && ToCurr == "Euro") || (FromCurr == "Euro" && ToCurr == "PLN"))
+		{
+			course = 4.31940008;
+		}
+		if(FromCurr == "PLN" && ToCurr == "Euro")
+		{
+			ConvertedAmount = Amount * course;
+		}
+		else if(FromCurr == "Euro" && ToCurr == "PLN")
+		{
+			ConvertedAmount = Amount / course;
+		}
+		
+		String value = ConvertedAmount.toString();
+		
+		
+		return value;
+	}
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -56,6 +82,20 @@ public class Main extends Application {
 			
 			Button Convert = new Button("Convert");
 			grid.add(Convert, 4, 1);
+			Convert.setOnAction(new EventHandler<ActionEvent>() {
+				@Override public void handle(ActionEvent e)
+				{
+					double amount = Double.parseDouble((CurrencyBefore.getText()));
+					String fromcurr = fromCurrency.getAccessibleText();
+					String tocurr = toCurrency.getAccessibleText();
+					ConvertedAmount2.setText(solve(amount,fromcurr,tocurr));
+				
+				
+				
+				
+				
+			}
+			});
 
 			
 			
