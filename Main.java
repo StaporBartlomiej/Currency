@@ -7,27 +7,67 @@ import java.text.DecimalFormat;
 import java.text.ParsePosition;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 
 public class Main extends Application {
 	
 	
+	private TableView<Person> table = new TableView<Person>();
+	
+	private final ObservableList<Person> data = FXCollections.observableArrayList(
+			new Person("Euro","1 EUR","4.32"),
+			new Person("US Dollar","1 USD","3.98"),
+			new Person("British Pound","1 GBP","4.86")
+			);
+	public static void main(String[] args) {
+		launch(args);
+	}
+	
+	 private HBox addHBox() {
+		 
+	        HBox hbox = new HBox();
+	        hbox.setPadding(new Insets(15, 12, 15, 12));
+	        hbox.setSpacing(10);   // Gap between nodes
+	        hbox.setStyle("-fx-background-color: #336699;");
+	 
+	        Button buttonCurrent = new Button("Current");
+	        buttonCurrent.setPrefSize(100, 20);
+	 
+	        Button buttonProjected = new Button("Projected");
+	        buttonProjected.setPrefSize(100, 20);
+	        
+	        hbox.getChildren().addAll(buttonCurrent, buttonProjected);
+	        
+	        return hbox;
+	    }
+	
+	
 	public String solve(BigDecimal Amount,String FromCurr, String ToCurr)
 	{
-		BigDecimal ConvertedAmount = new BigDecimal("0.0");
+		BigDecimal convertedAmount = new BigDecimal("0.0");
 		BigDecimal course = new BigDecimal("0.0");
 		MathContext mc = new MathContext(2);
 		
@@ -35,53 +75,87 @@ public class Main extends Application {
 		{
 			course = new BigDecimal("4.31940008");
 		}
-		if(FromCurr == "PLN" && ToCurr == "Euro")
+		else if((FromCurr == "PLN" && ToCurr == "US Dollar") || (FromCurr == "US Dollar" && ToCurr == "PLN"))
 		{
-			ConvertedAmount = Amount.divide(course,2,RoundingMode.HALF_UP);
+			course = new BigDecimal("3.98066");
 		}
-		else if(FromCurr == "Euro" && ToCurr == "PLN")
+		else if((FromCurr == "PLN" && ToCurr == "British Pound") || (FromCurr == "British Pound" && ToCurr == "PLN"))
 		{
-			ConvertedAmount = Amount.multiply(course,mc);
+			course = new BigDecimal("4.85988");
 		}
-		else if((FromCurr =="Euro" && ToCurr == "Euro") || (FromCurr =="PLN" && ToCurr == "PLN"))
+		else if((FromCurr == "Euro" && ToCurr == "US Dollar") || (FromCurr == "US Dollar" && ToCurr == "Euro"))
 		{
-			ConvertedAmount = Amount;
+			course = new BigDecimal("1.08700");
+		}
+		else if((FromCurr == "Euro" && ToCurr == "British Pound") || (FromCurr == "British Pound" && ToCurr == "Euro"))
+		{
+			course = new BigDecimal("0.889976");
+		}
+		else if((FromCurr == "US Dollar" && ToCurr == "British Pound") || (FromCurr == "British Pound" && ToCurr == "US Dollar"))
+		{
+			course = new BigDecimal("0.818844");
+		}
+		if((FromCurr == "PLN" && ToCurr == "Euro") ||(FromCurr == "PLN" && ToCurr == "US Dollar")||
+				(FromCurr == "PLN" && ToCurr == "British Pound")||(FromCurr == "US Dollar" && ToCurr == "Euro")
+				||(FromCurr == "British Pound" && ToCurr == "Euro")||(FromCurr == "US Dollar" && ToCurr == "British Pound"))
+		{
+			convertedAmount = Amount.divide(course,2,RoundingMode.HALF_UP);
+		}
+		else if(FromCurr == "Euro" && ToCurr == "PLN"||(FromCurr == "US Dollar" && ToCurr == "PLN")||(FromCurr == "British Pound" && ToCurr == "PLN"
+				||FromCurr == "Euro" && ToCurr == "US Dollar")||(FromCurr == "Euro" && ToCurr == "British Pound")
+				||FromCurr == "British Pound" && ToCurr == "US Dollar")
+		{
+			convertedAmount = Amount.multiply(course,mc);
+		}
+		else if(FromCurr == ToCurr)
+		{
+			convertedAmount = Amount;
 		}
 	
 		
 		//String result = String.format("%.2f", value);
-		BigDecimal result = ConvertedAmount.setScale(2);
+		BigDecimal result = convertedAmount.setScale(2);
 		String value = String.valueOf(result.doubleValue());
 		
 		
 		return value;
 	}
 	
+
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+			//Scene scene = new Scene(new Group());
 			primaryStage.setTitle("Currency Converter");
+			BorderPane border = new BorderPane();
+			//HBox hbox = addHBox();
 			GridPane grid = new GridPane();
+			border.setTop(grid);
+			table.setEditable(false);
+			
 			grid.setHgap(10);
 			grid.setVgap(10);
 			grid.setPadding(new Insets(0,10,0,10));
+			grid;
 
 			
 			
-			ObservableList<String> items = FXCollections.observableArrayList("PLN", "Euro");
+			ObservableList<String> items = FXCollections.observableArrayList("PLN", "Euro", "US Dollar","British Pound"); 
 			ComboBox<String> fromCurrency = new ComboBox(items);
 			ComboBox<String> toCurrency = new ComboBox(items);
+			
+			
 
 			
-			Label Amount = new Label("Amount");
-			grid.add(Amount, 0, 0);
+			Label amount = new Label("Amount");
+			grid.add(amount, 0, 0);
 			
-			TextField CurrencyBefore = new TextField();
-			CurrencyBefore.setPromptText("Enter Value");
-			grid.add(CurrencyBefore, 0, 1);
+			TextField currencyBefore = new TextField();
+			currencyBefore.setPromptText("Enter Value");
+			grid.add(currencyBefore, 0, 1);
 			
 			DecimalFormat format = new DecimalFormat( "#.00" ); // everything up to next comment forces user to input numbers, not Strings
-			CurrencyBefore.setTextFormatter( new TextFormatter<>(c ->
+			currencyBefore.setTextFormatter( new TextFormatter<>(c ->
 			{
 			    if ( c.getControlNewText().isEmpty() )
 			    {
@@ -123,7 +197,7 @@ public class Main extends Application {
 			Convert.setOnAction(new EventHandler<ActionEvent>() {
 				@Override public void handle(ActionEvent e)
 				{
-					BigDecimal amount = new BigDecimal( Double.parseDouble((CurrencyBefore.getText())));
+					BigDecimal amount = new BigDecimal( Double.parseDouble((currencyBefore.getText())));
 					String fromcurr = fromCurrency.getSelectionModel().getSelectedItem();
 					String tocurr = toCurrency.getSelectionModel().getSelectedItem();
 					ConvertedAmount2.setText(solve(amount,fromcurr,tocurr));
@@ -134,16 +208,59 @@ public class Main extends Application {
 				
 			}
 			});
+			
+			
+			
+			GridPane grid2 = new GridPane();
+			grid2.setHgap(10);
+			grid2.setVgap(10);
+			grid2.setPadding(new Insets(0,10,0,10));
+			
+			border.setCenter(grid2);
+			
+			
+
+			Label courseLabel = new Label("Course");
+			courseLabel.setFont(new Font("Times New Roman",20));
+			courseLabel.setTextFill(Color.CHARTREUSE);
+			//grid.add(CourseLabel, 0, 2);
+			
+			
+			
+			
+			//courseTable.setPrefWidth(525);
+			
+			TableColumn currencyName = new TableColumn("Currency Name");
+			currencyName.setMinWidth(100);
+			currencyName.setCellValueFactory(new PropertyValueFactory<Person,String>("cName"));
+			
+			TableColumn symbol = new TableColumn("Symbol");
+			symbol.setMinWidth(100);
+			symbol.setCellValueFactory(new PropertyValueFactory<Person,String>("sm"));
+			
+			TableColumn course = new TableColumn("Course");
+			course.setMinWidth(100);
+			course.setCellValueFactory(new PropertyValueFactory<Person,String>("cour"));
+			
+			
+			
+			
+			
+			
 
 			
+			table.setItems(data);
 			
+			table.getColumns().addAll(currencyName,symbol,course);
 			
-			Scene scene = new Scene(grid,525,375);
+			grid2.add(table, 0, 0);
+			border.setCenter(table);
+			Scene scene = new Scene(border,600,375);
+			
 			
 
 			
-			
-			
+			 
 			
 			
 			
@@ -156,7 +273,6 @@ public class Main extends Application {
 		
 	}
 	
-	public static void main(String[] args) {
-		launch(args);
-	}
+
+	
 }
