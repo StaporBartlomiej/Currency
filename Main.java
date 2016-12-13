@@ -1,19 +1,21 @@
 package application;
 	
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
+import java.util.HashMap;
 
 import javafx.application.Application;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -26,7 +28,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -63,62 +64,30 @@ public class Main extends Application {
 	        
 	        return hbox;
 	    }
+
 	
-	
-	public String solve(BigDecimal Amount,String FromCurr, String ToCurr)
+	public String findRateAndConvert(BigDecimal amount,String fromCurr, String toCurr)
 	{
-		BigDecimal convertedAmount = new BigDecimal("0.0");
-		BigDecimal course = new BigDecimal("0.0");
-		MathContext mc = new MathContext(2);
+		try
+		{
+			MathContext mc = new MathContext(5,RoundingMode.HALF_UP);
+			URL url = new URL("http://finance.yahoo.com/d/quotes.csv?f=l1&s="+ fromCurr + toCurr + "=X");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+			String line = reader.readLine();
+			if(line.length() > 0)
+			{
+				BigDecimal linebd = new BigDecimal(line);
+				BigDecimal result = amount.multiply(linebd,mc) ;
+				return String.valueOf(result);
+			}
+			reader.close();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		return "";
 		
-		if((FromCurr == "PLN" && ToCurr == "Euro") || (FromCurr == "Euro" && ToCurr == "PLN"))
-		{
-			course = new BigDecimal("4.31940008");
-		}
-		else if((FromCurr == "PLN" && ToCurr == "US Dollar") || (FromCurr == "US Dollar" && ToCurr == "PLN"))
-		{
-			course = new BigDecimal("3.98066");
-		}
-		else if((FromCurr == "PLN" && ToCurr == "British Pound") || (FromCurr == "British Pound" && ToCurr == "PLN"))
-		{
-			course = new BigDecimal("4.85988");
-		}
-		else if((FromCurr == "Euro" && ToCurr == "US Dollar") || (FromCurr == "US Dollar" && ToCurr == "Euro"))
-		{
-			course = new BigDecimal("1.08700");
-		}
-		else if((FromCurr == "Euro" && ToCurr == "British Pound") || (FromCurr == "British Pound" && ToCurr == "Euro"))
-		{
-			course = new BigDecimal("0.889976");
-		}
-		else if((FromCurr == "US Dollar" && ToCurr == "British Pound") || (FromCurr == "British Pound" && ToCurr == "US Dollar"))
-		{
-			course = new BigDecimal("0.818844");
-		}
-		if((FromCurr == "PLN" && ToCurr == "Euro") ||(FromCurr == "PLN" && ToCurr == "US Dollar")||
-				(FromCurr == "PLN" && ToCurr == "British Pound")||(FromCurr == "US Dollar" && ToCurr == "Euro")
-				||(FromCurr == "British Pound" && ToCurr == "Euro")||(FromCurr == "US Dollar" && ToCurr == "British Pound"))
-		{
-			convertedAmount = Amount.divide(course,2,RoundingMode.HALF_UP);
-		}
-		else if(FromCurr == "Euro" && ToCurr == "PLN"||(FromCurr == "US Dollar" && ToCurr == "PLN")||(FromCurr == "British Pound" && ToCurr == "PLN"
-				||FromCurr == "Euro" && ToCurr == "US Dollar")||(FromCurr == "Euro" && ToCurr == "British Pound")
-				||FromCurr == "British Pound" && ToCurr == "US Dollar")
-		{
-			convertedAmount = Amount.multiply(course,mc);
-		}
-		else if(FromCurr == ToCurr)
-		{
-			convertedAmount = Amount;
-		}
-	
-		
-		//String result = String.format("%.2f", value);
-		BigDecimal result = convertedAmount.setScale(2);
-		String value = String.valueOf(result.doubleValue());
-		
-		
-		return value;
 	}
 	
 
@@ -136,11 +105,24 @@ public class Main extends Application {
 			grid.setHgap(10);
 			grid.setVgap(10);
 			grid.setPadding(new Insets(0,10,0,10));
-			grid;
+			
 
 			
 			
-			ObservableList<String> items = FXCollections.observableArrayList("PLN", "Euro", "US Dollar","British Pound"); 
+			ObservableList<String> items = FXCollections.observableArrayList(
+					"PLN","EUR","USD","CAD","GBP","JPY","AUD","DZD","ARS","ALL","XAL","AWG",
+					"BHD","BBD","BZD","BTN","BWP","BND","BIF","BSD","BDT","BYR","BMD","BOB","BRL","BGN",
+					"KHR","KYD","XAF","COP","XCP","HRK","CZK","CNY","CVE","XOF","CLP","KMF","CRC","CUP",
+					"DJF","XCD","EGP","ERN","ETB","FJD","DKK","DOP","ECS","SVC","EEK","FKP",
+					"HKD","INR","GHC","XAU","GNF","HTG","HUF","IRR","ILS","IDR","GMD","GIP","GTQ","GYD","HNL","ISK","IQD",
+					"JOD","KES","LAK","LBP","LRD","LTL","JMD","KZT","KWD","LVL","LSL","LYD",
+					"MOP","MWK","MVR","MRO","MXN","MNT","MMK","MKD","MYR","MTL","MUR","MDL","MAD",
+					"NAD","ANG","NIO","KPW","OMR","NPR","NZD","NGN","NOK",
+					"XPF","XPD","PGK","PEN","XPT","QAR","RUB","PKR","PAB","PYG","PHP","RON","RWF",
+					"CHF","WST","SAR","SLL","SGD","SIT","SOS","LKR","SDG","SEK","KRW","STD","SCR","XAG","SKK","SBD","ZAR","SHP","SZL","SYP",
+					"TRY","TZS","TTD","AED","UAH","THB","TWD","TOP","TND","UGX","UYU",
+					"VUV","VND","ZMK","VEF","YER","ZWD"
+					); 
 			ComboBox<String> fromCurrency = new ComboBox(items);
 			ComboBox<String> toCurrency = new ComboBox(items);
 			
@@ -200,7 +182,7 @@ public class Main extends Application {
 					BigDecimal amount = new BigDecimal( Double.parseDouble((currencyBefore.getText())));
 					String fromcurr = fromCurrency.getSelectionModel().getSelectedItem();
 					String tocurr = toCurrency.getSelectionModel().getSelectedItem();
-					ConvertedAmount2.setText(solve(amount,fromcurr,tocurr));
+					ConvertedAmount2.setText(findRateAndConvert(amount,fromcurr,tocurr));
 				
 				//ConvertedAmount2.setText(CurrencyBefore.getText());
 				
