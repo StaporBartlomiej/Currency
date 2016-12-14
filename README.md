@@ -3,4 +3,4 @@ Available Features:
 -Can convert ~153 currencies
 -Precision is set to 4 digits after coma
 -Contain Graphical User Interface
--Contain table which shows current currency course(currently shows old data, will be fixed soon)
+-Contain table which shows current currency course(6 most popular)
